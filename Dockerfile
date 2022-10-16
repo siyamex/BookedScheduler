@@ -30,8 +30,8 @@ RUN docker-php-ext-install mysqli
 WORKDIR /var/www/librebooking
 RUN mkdir -p tpl_c tpl uploads
 RUN chown -R www-data:www-data tpl_c tpl uploads
-RUN chmod 755 tpl_c
-RUN chmod 755 tpl
-RUN chmod 755 uploads
+RUN apt update && apt install -y zlib1g-dev libpng-dev libfreetype6-dev && rm -rf /var/lib/apt/lists/*
+RUN a2enmod headers
+RUN docker-php-ext-configure gd --with-freetype && docker-php-ext-install gd
 
 CMD /entrypoint.sh
