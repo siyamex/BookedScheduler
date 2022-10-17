@@ -1,36 +1,50 @@
-version: '3.4'
+version: "3.7"
 
 services:
-
-  mariadb:
-    image: mariadb
+  db:
+    image: linuxserver/mariadb
+    container_name: librebooking-db
     restart: always
-    ports:
-      - 3306:3306
-    #volumes:
-    #  - /var/lib/mysql:/var/lib/mysql
-    environment:
-      - MARIADB_DATABASE=librebooking
-      - MARIADB_USER=librebooking
-      - MARIADB_PASSWORD=password
-      - MARIADB_ROOT_PASSWORD=rootpass
     networks:
-      - librebooking
-
-  lb:
-    image: limosek/librebooking
+      - net
+    ports:
+      - "3306:3306"
+    volumes:
+      - vol-db:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=
+      - MYSQL_DATABASE=librebooking
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_USER=lb_user
+      - MYSQL_PASSWORD=
+  app:
+    image: colisee/librebooking
+    container_name: librebooking
     restart: always
     depends_on:
-      - mariadb
-    ports:
-      - 8080:80
-    environment:
-      - DB_USER=librebooking
-      - DB_DATABASE=librebooking
-      - DB_PASSWORD=password
-      - DB_HOST=mariadb
+      - db
     networks:
-      - librebooking
+      - net
+    ports:
+      - "8080:80"
+    volumes:
+      - vol-app:/var/www/html
+    environment: 
+      - TZ=
+      - LB_DB_HOST=lb-db
+      - LB_DB_NAME=librebooking
+      - LB_INSTALL_PWD=
+      - LB_DB_USER=lb_user
+      - LB_DB_USER_PWD=
+
+volumes:
+  vol-db:
+    name: librebooking-db_data
+  vol-app:
+    name: librebooking_html
 
 networks:
-  librebooking:
+  net:
+    name: librebooking
